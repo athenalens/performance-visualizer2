@@ -2,7 +2,6 @@ from flask import Flask, render_template
 import pandas as pd
 import plotly
 import plotly.graph_objects as go
-import numpy as np
 import json
 
 app = Flask(__name__)
@@ -18,7 +17,7 @@ def index():
             try:
                 return float(x.replace('(', '').replace(')', ''))
             except ValueError:
-                return np.nan
+                return pd.NA
         else:
             return x
 
@@ -33,7 +32,7 @@ def index():
     # 増減を計算
     changes = [y1[0]]  # 初期値を追加
     for i in range(1, len(y1) - 1):  # 2行目の値を使用（最初と最後の値は除く）
-        if np.isnan(y2[i]):
+        if pd.isna(y2[i]):
             changes.append(y1[i])
         else:
             changes.append(y2[i])
@@ -42,7 +41,7 @@ def index():
     # measureを設定
     measure = []
     for i in range(len(changes)):
-        if np.isnan(y2[i]):
+        if pd.isna(y2[i]):
             measure.append('absolute')
         else:
             measure.append('relative')
@@ -71,4 +70,3 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True) if 'get_ipython' in globals() else app.run()
-
