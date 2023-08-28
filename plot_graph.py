@@ -54,13 +54,21 @@ def index():
         text = [str(c) for c in changes],
         measure = measure,
         base = 0,
-        increasing = {"marker":{"color":"Green"}},
-        decreasing = {"marker":{"color":"Red"}},
-        totals = {"marker":{"color":"Blue"}}
+        increasing = {"marker":{"color":"green"}},  # 緑色
+        decreasing = {"marker":{"color":"red"}},  # 赤色
+        totals = {"marker":{"color":"blue"}}    
     ))
 
-    # グラフのサイズを調整
-    fig.update_layout(autosize=False, width=1000, height=500, title_text="Unit: USD M", title_x=0.95)
+    # グラフのサイズと背景色を調整
+    fig.update_layout(
+        autosize=False,
+        width=1000,
+        height=500,
+        title_text="Unit: USD M",
+        title_x=0.95,
+        paper_bgcolor='rgba(0,0,0,0)',  # 透明な背景
+        plot_bgcolor='rgba(0,0,0,0)'  # 透明な背景
+    )
 
     # X軸下部にコメントを表示
     fig.update_xaxes(ticktext=df.iloc[2].tolist(), tickvals=x, tickangle=-45)
