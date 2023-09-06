@@ -5,11 +5,18 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <div id="plotly_graph"></div>
-    <script>
-        var graphs = {{ graphJSON | safe }};
-        Plotly.plot('plotly_graph',graphs,{});
-    </script>
+
+<h3>Upload your CSV file:</h3>
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <input type="submit" value="Upload and Plot">
+</form>
+
+<div id="plotly_graph"></div>
+<script>
+    var graphs = {{ graphJSON | safe }};
+    Plotly.plot('plotly_graph',graphs,{});
+</script>
+
 </body>
 </html>
-

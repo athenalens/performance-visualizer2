@@ -1,19 +1,28 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request, redirect, url_for
+import os
+from werkzeug.utils import secure_filename
 import pandas as pd
 import plotly
 import plotly.graph_objects as go
 import json
+from flask import abort
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'csv'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def generate_graph(filepath):
     try:
-        # CSVファイルからデータを読み込む
-        df = pd.read_csv('data.csv', header=None)
+        df = pd.read_csv(filepath, header=None)
         
         if df.empty:
-            return jsonify({"error": "CSV file is empty"}), 400
+            abort(400, description="CSV file is empty")
 
         # 括弧を取り除く
         def convert_to_float(x):
@@ -78,16 +87,43 @@ def index():
         fig.update_xaxes(ticktext=df.iloc[2].tolist(), tickvals=x, tickangle=-45)
 
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-        return render_template('index.html', graphJSON=graphJSON)
-        
-    except FileNotFoundError:
-        return jsonify({"error": "CSV file not found"}), 404
+
+        return graphJSON
+
     except pd.errors.EmptyDataError:
-        return jsonify({"error": "CSV file is empty"}), 400
+        abort(400, description="CSV file is empty")
     except pd.errors.ParserError:
-        return jsonify({"error": "Error parsing CSV file"}), 400
+        abort(400, description="Error parsing CSV file")
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        abort(500, description=str(e))
+
+@app.route('/')
+def index():
+    # ここにホームページのロジックを追加
+    return render_template('index.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # ファイルがない、または許可されていない拡張子の場合
+        if 'file' not in request.files or not allowed_file(request.files['file'].filename):
+            return redirect(request.url)
+
+        file = request.files['file']
+        if file.filename == '':
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            
+            # ここでplot_graph.pyのロジックを呼び出してグラフを描画
+            # 例: graph_data = generate_graph(filepath)
+            # return render_template('graph.html', graph_data=graph_data)
+
+        graphJSON = generate_graph(filepath)
+        return render_template('index.html', graphJSON=graphJSON)
 
 if __name__ == "__main__":
     app.run(debug=True) if 'get_ipython' in globals() else app.run()

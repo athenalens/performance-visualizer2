@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plotly Dash Flask Tutorial</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="plotly_graph"></div>
+    <script>
+        var graphs = {{ graph_data | safe }};
+        Plotly.plot('plotly_graph',graphs,{});
+    </script>
+</body>
+</html>
